@@ -31,6 +31,8 @@ ADD_EXECUTABLE(block block.c
 		libblkid-tiny/ext.c
 		libblkid-tiny/jffs2.c
 		libblkid-tiny/vfat.c
+		libblkid-tiny/crc32.c
+		libblkid-tiny/nilfs.c
 		libblkid-tiny/swap.c
 		libblkid-tiny/squashfs.c)
 TARGET_LINK_LIBRARIES(block ${LIBS} blobmsg_json)
