@@ -26,7 +26,6 @@ INSTALL(TARGETS mount_root
 
 ADD_EXECUTABLE(block block.c
 		libblkid-tiny/libblkid-tiny.c
-		libblkid-tiny/md5.c
 		libblkid-tiny/mkdev.c
 		libblkid-tiny/ext.c
 		libblkid-tiny/jffs2.c
@@ -59,5 +58,28 @@ ADD_EXECUTABLE(lsbloader lsbloader.c)
 TARGET_LINK_LIBRARIES(lsbloader ${LIBS})
 
 INSTALL(TARGETS lsbloader
+	RUNTIME DESTINATION sbin
+)
+
+ADD_LIBRARY(validate SHARED validate/validate.c)
+INSTALL(TARGETS validate
+	LIBRARY DESTINATION lib
+)
+
+ADD_EXECUTABLE(validate_data validate/cli.c)
+TARGET_LINK_LIBRARIES(validate_data ${LIBS} validate)
+INSTALL(TARGETS validate_data
+	RUNTIME DESTINATION sbin
+)
+
+ADD_EXECUTABLE(logd log/logd.c log/syslog.c)
+TARGET_LINK_LIBRARIES(logd ${LIBS})
+INSTALL(TARGETS logd
+	RUNTIME DESTINATION sbin
+)
+
+ADD_EXECUTABLE(logread log/logread.c)
+TARGET_LINK_LIBRARIES(logread ${LIBS})
+INSTALL(TARGETS logread
 	RUNTIME DESTINATION sbin
 )

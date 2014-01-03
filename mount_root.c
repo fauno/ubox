@@ -109,12 +109,16 @@ static char* find_mount(char *mp)
 	while (fgets(line, sizeof(line), fp)) {
 		char *s, *t = strstr(line, " ");
 
-		if (!t)
+		if (!t) {
+			fclose(fp);
 			return NULL;
+		}
 		t++;
 		s = strstr(t, " ");
-		if (!s)
+		if (!s) {
+			fclose(fp);
 			return NULL;
+		}
 		*s = '\0';
 
 		if (!strcmp(t, mp)) {
@@ -143,13 +147,16 @@ static char* find_mount_point(char *block, char *fs)
 			char *p = &line[len + 1];
 			char *t = strstr(p, " ");
 
-			if (!t)
+			if (!t) {
+				fclose(fp);
 				return NULL;
+			}
 
 			*t = '\0';
 			t++;
 
 			if (fs && strncmp(t, fs, strlen(fs))) {
+				fclose(fp);
 				ERROR("block is mounted with wrong fs\n");
 				return NULL;
 			}
@@ -423,6 +430,9 @@ static int switch2jffs(void)
 {
 	char mtd[32];
 
+	if (!find_mtd_block("rootfs_patches", mtd, sizeof(mtd)))
+		return 0;
+
 	if (find_mtd_block("rootfs_data", mtd, sizeof(mtd))) {
 		ERROR("no rootfs_data was found\n");
 		return -1;
@@ -579,7 +589,7 @@ static int main_jffs2reset(int argc, char **argv)
 
 	mp = find_mount_point(mtd, "jffs2");
 	if (mp) {
-		LOG("%s is mounted as %s, only ereasing files\n", mtd, mp);
+		LOG("%s is mounted as %s, only erasing files\n", mtd, mp);
 		foreachdir(mp, handle_rmdir);
 		mount(mp, "/", NULL, MS_REMOUNT, 0);
 	} else {
@@ -763,7 +773,9 @@ int main(int argc, char **argv)
 	if (!getenv("PREINIT"))
 		return -1;
 
-	if (find_mtd_char("rootfs_data", mtd, sizeof(mtd))) {
+	if (!find_mtd_block("rootfs_patches", mtd, sizeof(mtd))) {
+		ramoverlay();
+	} else if (find_mtd_char("rootfs_data", mtd, sizeof(mtd))) {
 		if (!find_mtd_char("rootfs", mtd, sizeof(mtd)))
 			mtd_unlock(mtd);
 		LOG("mounting /dev/root\n");
